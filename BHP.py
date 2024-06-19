@@ -3,7 +3,8 @@
 
 # In[1]:
 
-
+import streamlit as st
+import streamlit.components.v1 as stc
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
