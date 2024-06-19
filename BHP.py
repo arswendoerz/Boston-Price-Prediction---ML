@@ -1,145 +1,163 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[125]:
 
-import streamlit as st
-import streamlit.components.v1 as stc
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import sklearn.datasets
 from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from sklearn import metrics
 from sklearn.datasets import fetch_openml
+from sklearn.preprocessing import StandardScaler
 
 
-# In[2]:
+# In[105]:
 
 
 house_price_dataset = pd.read_csv("boston.csv")
 
 
-# In[4]:
+# In[106]:
 
 
 house_price_dataset
 
 
-# In[73]:
+# In[107]:
 
 
 print(house_price_dataset)
 
 
-# In[74]:
+# In[126]:
 
 
-house_price_dataframe = pd.DataFrame(boston.data, columns=boston.feature_names)
+data = fetch_openml(data_id=531)
 
 
-# In[75]:
+# In[127]:
 
 
-house_price_dataframe.head()
+house_price_dataframe = pd.DataFrame(data=data.data, columns=data.feature_names)
 
 
-# In[77]:
-
-
-house_price_dataframe['price'] = boston.target
-
-
-# In[78]:
+# In[128]:
 
 
 house_price_dataframe.head()
 
 
-# In[79]:
+# In[129]:
+
+
+house_price_dataframe['PRICE'] = data.target
+
+
+# In[112]:
+
+
+house_price_dataframe.head()
+
+
+# In[130]:
 
 
 house_price_dataframe.shape
 
 
-# In[80]:
+# In[114]:
 
 
 house_price_dataframe.isnull().sum()
 
 
-# In[81]:
+# In[115]:
 
 
 house_price_dataframe.describe()
 
 
-# In[121]:
+# In[116]:
 
 
 correlation = house_price_dataframe.corr()
 
 
-# In[83]:
+# In[117]:
 
 
 plt.figure(figsize=(10,10))
 sns.heatmap(correlation, cbar=True, square=True, fmt='.1f', annot=True, annot_kws={'size':8}, cmap='Blues')
 
 
-# In[120]:
+# In[118]:
 
 
-X = house_price_dataframe.drop(['price'], axis=1)
-Y = house_price_dataframe['price']
+X = house_price_dataframe.drop(['PRICE'], axis=1)
+Y = house_price_dataframe['PRICE']
 
 
-# In[122]:
+# In[131]:
 
 
-print(X)
-print(Y)
+categorical_cols = ['CHAS', 'RAD']
 
 
-# In[106]:
+# In[132]:
 
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, random_state = 2)
+X_encoded = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
 
 
-# In[117]:
+# In[133]:
 
 
-print(X.shape, X_train.shape, X_test.shape)
+X_train, X_test, Y_train, Y_test = train_test_split(X_encoded, Y, test_size=0.2, random_state=2)
 
 
 # In[134]:
 
 
-model = XGBRegressor()
-
-
-# In[135]:
-
-
-model.fit(X_train, Y_train)
+print(X.shape, X_train.shape, X_test.shape)
 
 
 # In[136]:
 
 
-training_data_prediction = model.predict(X_train)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+# In[135]:
+
+
+model = XGBRegressor()
 
 
 # In[137]:
 
 
-print(training_data_prediction)
+model.fit(X_train, Y_train)
 
 
 # In[138]:
+
+
+training_data_prediction = model.predict(X_train)
+
+
+# In[139]:
+
+
+print(training_data_prediction)
+
+
+# In[140]:
 
 
 # R squared error
@@ -152,7 +170,7 @@ print("R squared error : ", score_1)
 print('Mean Absolute Error : ', score_2)
 
 
-# In[142]:
+# In[141]:
 
 
 plt.scatter(Y_train, training_data_prediction)
@@ -162,13 +180,13 @@ plt.title("Actual Price vs Predicted Price")
 plt.show()
 
 
-# In[140]:
+# In[142]:
 
 
 test_data_prediction = model.predict(X_test)
 
 
-# In[141]:
+# In[143]:
 
 
 score_1 = metrics.r2_score(Y_test, test_data_prediction)
